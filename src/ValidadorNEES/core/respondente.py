@@ -34,7 +34,7 @@ class Respondente:
         As faixas foram definidas para refletir a concentração de alunos
         em torno da média (0), com menos alunos nos extremos.
         """
-        theta = self.habilidade - 0.6
+        theta = self.habilidade - 0.8
 
         if theta <= -2.0:
             return "Muito Baixo (Elementar)"
@@ -52,7 +52,7 @@ class Respondente:
             return "Muito Alto (Avançado)"
 
     def _get_descricao_perfil(self) -> str:
-        theta = self.habilidade - 0.6
+        theta = self.habilidade - 0.8
 
         if theta <= -2.0:
             return """

@@ -1,6 +1,5 @@
 # Arquivo: run_simulation.py (na pasta raiz do projeto)
 
-import os
 from pathlib import Path
 
 from dotenv import load_dotenv
