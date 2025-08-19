@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from dotenv import load_dotenv
+
 # Importações do LangChain
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda
@@ -18,7 +19,7 @@ load_dotenv()
 PROJECT_ROOT = Path(__file__).resolve().parent
 LLM_PROVIDER = "google"
 LLM_MODEL = "gemini-1.5-flash-8b"
-NUM_RESPONDENTES = 500
+NUM_RESPONDENTES = 1
 CAMINHO_PROVA = (
     PROJECT_ROOT / "data" / "01_raw" / "ENEM" / "2022" / "itens_com_enunciados.csv"
 )
