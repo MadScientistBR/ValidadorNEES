@@ -1,6 +1,7 @@
 import os
 from typing import List, cast
 
+import numpy as np
 import pandas as pd
 
 from ..core.respondente import Respondente
@@ -21,18 +22,33 @@ class GeradorRespondentes:
 
         self.caminho_habilidades = caminho_habilidades
 
+    # def _gerar_sample_habilidades(self, numero_de_alunos: int) -> pd.Series:
+    #     """
+    #     Retorna um pd.Series sample (mantendo a mesma distribuição
+    #     do arquivo original) contendo a habilidade para um número
+    #     de respondentes especificado.
+    #     """
+    #     df_habilidades = pd.read_csv(self.caminho_habilidades)
+    #     df_habilidades = df_habilidades.dropna(subset=["HABILIDADE"])
+    #
+    #     resultado_sample = df_habilidades["HABILIDADE"].sample(n=numero_de_alunos)
+    #
+    #     return cast(pd.Series, resultado_sample)
+    #
+
     def _gerar_sample_habilidades(self, numero_de_alunos: int) -> pd.Series:
         """
-        Retorna um pd.Series sample (mantendo a mesma distribuição
-        do arquivo original) contendo a habilidade para um número
-        de respondentes especificado.
+        Gera uma amostra de habilidades (theta) para um número especificado de alunos
+        a partir de uma distribuição normal padrão (média=0, desvio padrão=1).
+        Os valores são limitados ao intervalo [-3, 3].
         """
-        df_habilidades = pd.read_csv(self.caminho_habilidades)
-        df_habilidades = df_habilidades.dropna(subset=["HABILIDADE"])
+        habilidades_array = np.random.normal(loc=0, scale=1, size=numero_de_alunos)
 
-        resultado_sample = df_habilidades["HABILIDADE"].sample(n=numero_de_alunos)
+        habilidades_array_filtrado = np.clip(habilidades_array, a_min=-3, a_max=3)
 
-        return cast(pd.Series, resultado_sample)
+        habilidades_series = pd.Series(habilidades_array_filtrado, name="habilidades")
+
+        return habilidades_series
 
     def gerar_respondentes(self, numero_de_alunos: int) -> List[Respondente]:
         """

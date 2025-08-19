@@ -31,11 +31,11 @@ class Respondente:
             self.habilidade - 0.6
         )  # testando alguns offsets para ver se a simulação melhora
 
-        if theta <= -0.8:
+        if theta <= -1.5:
             return "muito baixo"
-        elif theta <= -0.3:
+        elif theta <= 0.0:
             return "baixo"
-        elif theta <= 1.0:
+        elif theta <= 1.8:
             return "médio"
         else:
             return "alto"
