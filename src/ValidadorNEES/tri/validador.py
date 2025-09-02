@@ -1,10 +1,18 @@
+from enum import Enum
 from typing import Any, Dict, Final, Literal, Set, TypeAlias
 
 import numpy as np
 import pandas as pd
+from sklearn.metrics import accuracy_score, confusion_matrix
 
 ParametroTRI: TypeAlias = Literal["A", "B"]  # parâmetros TRI de interesse
 CorrelationMethod: TypeAlias = Literal["pearson", "spearman"]
+
+
+class BinDificuldade(Enum):
+    FACIL = "Fácil"
+    MEDIA = "Média"
+    DIFICIL = "Dificil"
 
 
 class ValidadorTRI:
@@ -38,6 +46,7 @@ class ValidadorTRI:
 
         self._verificar_esquema(df_real, df_simulado)
         self._alinhar_dataframes(df_parametros_reais, df_parametros_simulados)
+        self._calcular_limites_dificuldade()
 
     def _verificar_esquema(
         self, df_real: pd.DataFrame, df_simulado: pd.DataFrame
@@ -120,7 +129,47 @@ class ValidadorTRI:
         ) ** 2
         return float(np.sqrt(np.mean(diferenca_quadratica)))
 
-    def obter_dados_para_relatorio(self) -> Dict[str, Any]:
+    def _calcular_limites_dificuldade(self) -> None:
+        """Calcula os pontos de corte de dificuldade com base nos quantis dos dados REAIS."""
+        quantis = [0, 0.25, 0.75, 1.0]
+
+        # Calcula os valores de 'b' que correspondem a esses quantis
+        limites = self.df_real["B"].quantile(quantis).tolist()
+
+        # Garante que os limites sejam únicos para evitar erros no pd.cut
+        limites_unicos = sorted(list(set(limites)))
+        limites_unicos[0] = -np.inf  # O limite inferior deve ser infinito
+        limites_unicos[-1] = np.inf  # O limite superior deve ser infinito
+
+        self.limites_dificuldades = limites_unicos
+
+    def _categorizar_dificuldade(self, series_b: pd.Series) -> pd.Series:
+        """
+        Categoriza as questões em fáceis, médias e difíceis com base no parâmetro
+        B. No caso, analisa-se os quantis da seguinte forma:
+
+        Questões fáceis: 25% (Ponto de corte: 1° quartil)
+        Questões médias: 50% (1° a 3° quartil)
+        Questões difíceis: 25% (3° quartil ao final)
+        """
+        labels = [
+            BinDificuldade.FACIL.value,
+            BinDificuldade.MEDIA.value,
+            BinDificuldade.DIFICIL.value,
+        ]
+
+        num_categorias = len(self.limites_dificuldades) - 1
+
+        categorias = pd.cut(
+            x=series_b,
+            bins=self.limites_dificuldades,
+            labels=labels[:num_categorias],
+            include_lowest=True,
+        )
+
+        return pd.Series(categorias)
+
+    def obter_dados_continuos_para_relatorio(self) -> Dict[str, Any]:
         """
         Retorna os dados necessários para criação de um relatório que analisa
         a qualidade da simulação.
@@ -151,3 +200,25 @@ class ValidadorTRI:
         }
 
         return dados
+
+    def obter_dados_discretos_para_relatorio(self) -> Dict[str, Any]:
+        """Retorna as métricas e dados para a análise discreta da dificuldade."""
+        b_real_cat = self._categorizar_dificuldade(pd.Series(self.df_real["B"]))
+        b_simulado_cat = self._categorizar_dificuldade(pd.Series(self.df_simulado["B"]))
+
+        labels = [
+            BinDificuldade.FACIL.value,
+            BinDificuldade.MEDIA.value,
+            BinDificuldade.DIFICIL.value,
+        ]
+
+        # Calcular a matriz de confusão e a acurácia
+        matriz = confusion_matrix(b_real_cat, b_simulado_cat, labels=labels)
+        acuracia = accuracy_score(b_real_cat, b_simulado_cat)
+
+        return {
+            "metricas": {"acuracia": acuracia},
+            "matriz_confusao": matriz,
+            "categorias": {"real": b_real_cat, "simulado": b_simulado_cat},
+            "labels": labels,
+        }
