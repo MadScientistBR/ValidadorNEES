@@ -2,9 +2,9 @@ from typing import Any, Dict, Final, Literal, Set, TypeAlias
 
 import numpy as np
 import pandas as pd
-from pandas.core.frame import CorrelationMethod
 
 ParametroTRI: TypeAlias = Literal["A", "B"]  # parâmetros TRI de interesse
+CorrelationMethod: TypeAlias = Literal["pearson", "spearman"]
 
 
 class ValidadorTRI:
