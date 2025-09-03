@@ -73,3 +73,5 @@ logs/
 
 # Exceção para o README em pastas que de outra forma estariam vazias
 !*/README.md
+
+*.png
