@@ -5,7 +5,9 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-ParametroTRI: TypeAlias = Literal["A", "B"]  # parâmetros TRI de interesse
+ParametroInteresse: TypeAlias = Literal[
+    "A", "B", "PROB_ACERTO"
+]  # parâmetros TRI de interesse
 CorrelationMethod: TypeAlias = Literal["pearson", "spearman"]
 
 
@@ -28,7 +30,7 @@ class ValidadorTRI:
         questões. Deve conter apenas as seguintes colunas [ID_QUESTÃO, A, B].
     """
 
-    COLUNAS_ESPERADAS: Final[Set[str]] = {"A", "B", "ID_QUESTÃO"}
+    COLUNAS_ESPERADAS: Final[Set[str]] = {"A", "B", "ID_QUESTÃO", "PROB_ACERTO"}
 
     def __init__(
         self, df_parametros_reais: pd.DataFrame, df_parametros_simulados: pd.DataFrame
@@ -99,7 +101,7 @@ class ValidadorTRI:
     def _calcular_correlacao(
         self,
         method: CorrelationMethod,
-        parametro: ParametroTRI,
+        parametro: ParametroInteresse,
     ) -> float:
         """
         Método base que prepara, valida e calcula a correlação entre duas séries
@@ -113,14 +115,14 @@ class ValidadorTRI:
         correlation = parametros_reais.corr(parametros_simulados, method=method)
         return float(correlation)
 
-    def _calcular_bias(self, parametro: ParametroTRI) -> float:
+    def _calcular_bias(self, parametro: ParametroInteresse) -> float:
         """
         Calcula o BIAS (Erro médio) entre as questões.
         """
         diferenca = self.df_simulado[parametro] - self.df_real[parametro]
         return float(np.mean(diferenca))
 
-    def _calcular_rmse(self, parametro: ParametroTRI) -> float:
+    def _calcular_rmse(self, parametro: ParametroInteresse) -> float:
         """
         Calcula o RMSE (Raiz do erro quadrático médio) entre os parâmetros.
         """
@@ -131,10 +133,10 @@ class ValidadorTRI:
 
     def _calcular_limites_dificuldade(self) -> None:
         """Calcula os pontos de corte de dificuldade com base nos quantis dos dados REAIS."""
-        quantis = [0, 0.25, 0.75, 1.0]
+        quantis = [0, 0.50, 0.75, 1.0]
 
-        # Calcula os valores de 'b' que correspondem a esses quantis
-        limites = self.df_real["B"].quantile(quantis).tolist()
+        # Calcula os valores da 'probabilidade de acerto' que correspondem a esses quantis
+        limites = self.df_real["PROB_ACERTO"].quantile(quantis).tolist()
 
         # Garante que os limites sejam únicos para evitar erros no pd.cut
         limites_unicos = sorted(list(set(limites)))
@@ -143,7 +145,7 @@ class ValidadorTRI:
 
         self.limites_dificuldades = limites_unicos
 
-    def _categorizar_dificuldade(self, series_b: pd.Series) -> pd.Series:
+    def _categorizar_dificuldade(self, series_prob: pd.Series) -> pd.Series:
         """
         Categoriza as questões em fáceis, médias e difíceis com base no parâmetro
         B. No caso, analisa-se os quantis da seguinte forma:
@@ -161,7 +163,7 @@ class ValidadorTRI:
         num_categorias = len(self.limites_dificuldades) - 1
 
         categorias = pd.cut(
-            x=series_b,
+            x=series_prob,
             bins=self.limites_dificuldades,
             labels=labels[:num_categorias],
             include_lowest=True,
@@ -180,21 +182,35 @@ class ValidadorTRI:
         )
 
         dados = {
+            # "metricas": {
+            #     "a_correlacao_spearman": self._calcular_correlacao("spearman", "A"),
+            #     "a_correlacao_pearson": self._calcular_correlacao("pearson", "A"),
+            #     "a_bias": self._calcular_bias("A"),
+            #     "a_rmse": self._calcular_rmse("A"),
+            #     "b_correlacao_spearman": self._calcular_correlacao("spearman", "B"),
+            #     "b_correlacao_pearson": self._calcular_correlacao("pearson", "B"),
+            #     "b_bias": self._calcular_bias("B"),
+            #     "b_rmse": self._calcular_rmse("B"),
+            # },
+            # "dados_brutos": {
+            #     "a_real": self.df_real["A"],
+            #     "a_simulado": self.df_simulado["A"],
+            #     "b_real": self.df_real["B"],
+            #     "b_simulado": self.df_simulado["B"],
+            # },
             "metricas": {
-                "a_correlacao_spearman": self._calcular_correlacao("spearman", "A"),
-                "a_correlacao_pearson": self._calcular_correlacao("pearson", "A"),
-                "a_bias": self._calcular_bias("A"),
-                "a_rmse": self._calcular_rmse("A"),
-                "b_correlacao_spearman": self._calcular_correlacao("spearman", "B"),
-                "b_correlacao_pearson": self._calcular_correlacao("pearson", "B"),
-                "b_bias": self._calcular_bias("B"),
-                "b_rmse": self._calcular_rmse("B"),
+                "prob_de_acerto_spearman": self._calcular_correlacao(
+                    "spearman", "PROB_ACERTO"
+                ),
+                "prob_de_acerto_pearson": self._calcular_correlacao(
+                    "pearson", "PROB_ACERTO"
+                ),
+                "prob_de_acerto_bias": self._calcular_bias("PROB_ACERTO"),
+                "prob_de_acerto_rmse": self._calcular_rmse("PROB_ACERTO"),
             },
             "dados_brutos": {
-                "a_real": self.df_real["A"],
-                "a_simulado": self.df_simulado["A"],
-                "b_real": self.df_real["B"],
-                "b_simulado": self.df_simulado["B"],
+                "prob_de_acerto_real": self.df_real["PROB_ACERTO"],
+                "prob_de_acerto_simulada": self.df_simulado["PROB_ACERTO"],
             },
             "df_comparativo": df_comp,
         }
@@ -203,8 +219,12 @@ class ValidadorTRI:
 
     def obter_dados_discretos_para_relatorio(self) -> Dict[str, Any]:
         """Retorna as métricas e dados para a análise discreta da dificuldade."""
-        b_real_cat = self._categorizar_dificuldade(pd.Series(self.df_real["B"]))
-        b_simulado_cat = self._categorizar_dificuldade(pd.Series(self.df_simulado["B"]))
+        prob_de_acerto_real_cat = self._categorizar_dificuldade(
+            pd.Series(self.df_real["PROB_ACERTO"])
+        )
+        prob_acerto_real_cat = self._categorizar_dificuldade(
+            pd.Series(self.df_simulado["PROB_ACERTO"])
+        )
 
         labels = [
             BinDificuldade.FACIL.value,
@@ -213,12 +233,17 @@ class ValidadorTRI:
         ]
 
         # Calcular a matriz de confusão e a acurácia
-        matriz = confusion_matrix(b_real_cat, b_simulado_cat, labels=labels)
-        acuracia = accuracy_score(b_real_cat, b_simulado_cat)
+        matriz = confusion_matrix(
+            prob_de_acerto_real_cat, prob_acerto_real_cat, labels=labels
+        )
+        acuracia = accuracy_score(prob_de_acerto_real_cat, prob_acerto_real_cat)
 
         return {
             "metricas": {"acuracia": acuracia},
             "matriz_confusao": matriz,
-            "categorias": {"real": b_real_cat, "simulado": b_simulado_cat},
+            "categorias": {
+                "real": prob_de_acerto_real_cat,
+                "simulado": prob_acerto_real_cat,
+            },
             "labels": labels,
         }

@@ -35,7 +35,7 @@ class EstimadorTRI:
         """
         Função que recebe um dataframe com as respostas dos alunos simulados
         e retorna um dataframe com os parâmetros de discriminação (a) e
-        dificuldade (b) da TRI ordenados pelo ID da questão.
+        dificuldade (b) e porcentagem de acerto (%).
         """
         EstimadorTRI._verificar_esquema(df_simulado)
 
@@ -43,6 +43,7 @@ class EstimadorTRI:
         df_pivotado = df_simulado.pivot(
             index="item_id", columns="respondente_id", values="acertou"
         )
+
         index_series = df_pivotado.index
 
         tri_data = twopl_jml(dataset=df_pivotado.astype(int).to_numpy())
@@ -51,6 +52,7 @@ class EstimadorTRI:
             {
                 "A": tri_data["Discrimination"],
                 "B": tri_data["Difficulty"],
+                "PROB_ACERTO": df_pivotado.mean(axis=1),
                 "ID_QUESTÃO": index_series,
             },
         )
