@@ -13,10 +13,15 @@ from src.ValidadorNEES.tri.validador import BinDificuldade, ValidadorTRI
 # --- 1. CONFIGURAÇÃO DOS CAMINHOS ---
 current_path = Path.cwd()
 enunciados_path = (
-    current_path / "data" / "01_raw" / "ENEM" / "2022" / "2022_com_prob.csv"
+    current_path
+    / "data"
+    / "01_raw"
+    / "ENEM"
+    / "2022"
+    / "2019_ENUNCIADOS_SEM_IMAGEM.csv"
 )
 respostas_path = (
-    current_path / "data" / "03_processed" / "resultados_simulacao_2022.csv"
+    current_path / "data" / "03_processed" / "resultados_simulacao_2019.csv"
 )
 
 # --- 2. PREPARAÇÃO DO DATAFRAME DE PARÂMETROS REAIS (df_real) ---

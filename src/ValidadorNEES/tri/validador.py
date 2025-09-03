@@ -133,7 +133,7 @@ class ValidadorTRI:
 
     def _calcular_limites_dificuldade(self) -> None:
         """Calcula os pontos de corte de dificuldade com base nos quantis dos dados REAIS."""
-        quantis = [0, 0.50, 0.75, 1.0]
+        quantis = [0, 0.30, 0.75, 1.0]
 
         # Calcula os valores da 'probabilidade de acerto' que correspondem a esses quantis
         limites = self.df_real["PROB_ACERTO"].quantile(quantis).tolist()

@@ -19,15 +19,20 @@ load_dotenv()
 PROJECT_ROOT = Path(__file__).resolve().parent
 LLM_PROVIDER = "google"
 LLM_MODEL = "gemini-1.5-flash-8b"
-NUM_RESPONDENTES = 1000
+NUM_RESPONDENTES = 500
 CAMINHO_PROVA = (
-    PROJECT_ROOT / "data" / "01_raw" / "ENEM" / "2022" / "itens_com_enunciados.csv"
+    PROJECT_ROOT
+    / "data"
+    / "01_raw"
+    / "ENEM"
+    / "2022"
+    / "2019_ENUNCIADOS_SEM_IMAGEM.csv"
 )
 CAMINHO_HABILIDADES = (
     PROJECT_ROOT / "data" / "01_raw" / "ENEM" / "2022" / "habilidades_alunos.csv"
 )
 CAMINHO_SAIDA_RESULTADOS = (
-    PROJECT_ROOT / "data" / "03_processed" / "resultados_simulacao.csv"
+    PROJECT_ROOT / "data" / "03_processed" / "resultados_simulacao_2019.csv"
 )
 
 
