@@ -26,13 +26,13 @@ CAMINHO_PROVA = (
     / "01_raw"
     / "ENEM"
     / "2022"
-    / "2019_ENUNCIADOS_SEM_IMAGEM.csv"
+    / "2017_ENUNCIADOS_SEM_IMAGEM.csv"
 )
 CAMINHO_HABILIDADES = (
     PROJECT_ROOT / "data" / "01_raw" / "ENEM" / "2022" / "habilidades_alunos.csv"
 )
 CAMINHO_SAIDA_RESULTADOS = (
-    PROJECT_ROOT / "data" / "03_processed" / "resultados_simulacao_2019.csv"
+    PROJECT_ROOT / "data" / "03_processed" / "resultados_simulacao_2017.csv"
 )
 
 

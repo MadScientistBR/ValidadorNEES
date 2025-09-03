@@ -18,10 +18,10 @@ enunciados_path = (
     / "01_raw"
     / "ENEM"
     / "2022"
-    / "2019_ENUNCIADOS_SEM_IMAGEM.csv"
+    / "2017_ENUNCIADOS_SEM_IMAGEM.csv"
 )
 respostas_path = (
-    current_path / "data" / "03_processed" / "resultados_simulacao_2019.csv"
+    current_path / "data" / "03_processed" / "resultados_simulacao_2017.csv"
 )
 
 # --- 2. PREPARAÇÃO DO DATAFRAME DE PARÂMETROS REAIS (df_real) ---

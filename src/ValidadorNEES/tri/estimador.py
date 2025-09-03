@@ -47,8 +47,8 @@ class EstimadorTRI:
 
         index_series = df_pivotado.index
 
-        prob_acerto = pd.Series(df_pivotado.mean(axis=1)) - 0.20
-        # prob_acerto = EstimadorTRI.ajustar_probabilidade_sigmoidal(prob_acerto)
+        prob_acerto = pd.Series(df_pivotado.mean(axis=1))
+        prob_acerto = EstimadorTRI.ajustar_probabilidade_sigmoidal(prob_acerto)
 
         tri_data = twopl_jml(dataset=df_pivotado.astype(int).to_numpy())
 
@@ -70,7 +70,7 @@ class EstimadorTRI:
     def ajustar_probabilidade_sigmoidal(
         prob_series: pd.Series, fator_contraste: float = 4.0
     ) -> pd.Series:
-        prob_centralizada = prob_series - 0.3
+        prob_centralizada = prob_series - 0.50
 
         prob_ajustada = expit(prob_centralizada * fator_contraste)
 
